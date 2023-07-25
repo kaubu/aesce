@@ -55,34 +55,27 @@ struct Directory {
 
 impl Directory {
     fn add_child(&mut self, dir_entry: DirectoryEntry) {
-        // Check if the child being added is a directory or file, so that
-        // searching for a duplicate name is easy
-        match dir_entry {
-            DirectoryEntry::Directory(dir) => {
-                // If a file or directory with that name exists
-                if self.children.iter().find(|x| {
-                    match **x {
-                        DirectoryEntry::Directory(d) => {
-                            d.name == dir.name
-                        },
-                        _ => false,
-                    }
-                }).is_some() {
-                    println!(
-                        "[error] directory or file with that name already exists!"
-                    );
-                    return;
+        // If adding a file
+        if let DirectoryEntry::File(f) = &dir_entry {
+            if self.children.iter().find(|x| {
+                let mut exists = false;
+                
+                if let DirectoryEntry::File(g) = x.clone() {
+                    exists = g.name == f.name;
                 }
-            },
-            DirectoryEntry::File(file) => {
 
-            },
+                exists
+            }).is_some() {
+                println!("[error] file '{}' already exists!", f.name);
+                return;
+            }
         }
-
-        
 
         self.children.push(Box::new(dir_entry));
     }
 
     // fn remove_child(&mut self,);
+
+    // fn get_path
+    // recursively goes up `parent`s until it finds the root directory
 }
