@@ -1,5 +1,9 @@
 mod fs;
 
+// Consts
+const ROOT_DIRECTORY: &str = "./";
+const FILES_DIRECTORY: &str = "./files";
+
 fn main() {
     println!("Hello, world!");
 
