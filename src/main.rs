@@ -12,5 +12,5 @@ fn main() {
         "emails.txt".to_string()
     );
 
-    println!("{file:?}");
+    // println!("{file:?}");
 }
