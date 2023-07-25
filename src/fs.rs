@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use chrono::prelude::*;
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct File {
     // 67e55044-10b1-426f-9247-bb680e5fe0c8
     uuid: Uuid,
@@ -42,11 +42,13 @@ impl File {
     }
 }
 
+#[derive(Clone)]
 enum DirectoryEntry {
     Directory(Directory),
     File(File),
 }
 
+#[derive(Clone)]
 struct Directory {
     name: String,
     parent: Box<DirectoryEntry>,
@@ -56,19 +58,14 @@ struct Directory {
 impl Directory {
     fn add_child(&mut self, dir_entry: DirectoryEntry) {
         // If adding a file
-        if let DirectoryEntry::File(f) = &dir_entry {
-            if self.children.iter().find(|x| {
-                let mut exists = false;
-                
-                if let DirectoryEntry::File(g) = x.clone() {
-                    exists = g.name == f.name;
+        if let DirectoryEntry::File(f_one) = &dir_entry {
+            (&self.children).into_iter().any(|c| {
+                if let DirectoryEntry::File(f_two) = *(*c).clone() {
+                    return f_one.name == f_two.name
                 }
 
-                exists
-            }).is_some() {
-                println!("[error] file '{}' already exists!", f.name);
-                return;
-            }
+                false
+            });
         }
 
         self.children.push(Box::new(dir_entry));
