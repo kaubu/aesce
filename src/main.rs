@@ -1,3 +1,5 @@
+use crate::fs::File;
+
 mod fs;
 
 // Consts
@@ -13,4 +15,16 @@ fn main() {
     );
 
     // println!("{file:?}");
+
+    let mut root = fs::Directory::create_root_dir();
+
+    root.add_file(
+        File::new("/".to_owned(), String::from("test.txt"))
+    );
+
+    let path = fs::Directory::get_path(
+        &root, Vec::new()
+    );
+
+    println!("Path = {path}");
 }

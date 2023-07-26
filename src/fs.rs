@@ -25,7 +25,7 @@ pub struct File {
 impl File {
     pub fn new(location: String, name: String) -> File {
         let uuid = Uuid::new_v4();
-        let absolute_path = format!("{}{}", location, name);
+        // let absolute_path = format!("{}{}", location, name);
         let mut real_path = PathBuf::from(crate::FILES_DIRECTORY);
         real_path.push(format!("{}.af", uuid.to_string()));
         let created_date = Utc::now();
@@ -46,16 +46,57 @@ impl File {
 type DirectoryListing<'a> = HashMap<String, Directory<'a>>;
 type FileListing = HashMap<String, File>;
 
-#[derive(Clone)]
-struct Directory<'a> {
+enum ParentDir<'a> {
+    Root,
+    Sub(DirectoryListing<'a>),
+}
+
+pub struct Directory<'a> {
     name: String,
-    parent: &'a HashMap<String, DirectoryListing<'a>>,
+    parent: &'a ParentDir<'a>,
     // children: &'a HashMap<String, DirectoryEntry>,
     directories: DirectoryListing<'a>,
     files: FileListing,
 }
 
-impl Directory<'_> {
+impl<'a> Directory<'a> {
+    pub fn create_root_dir() -> Directory<'a> {
+        Directory {
+            name: "/".to_string(),
+            parent: &ParentDir::Root,
+            directories: HashMap::new(),
+            files: HashMap::new(),
+        }
+    }
+
+    pub fn get_path(dir: &Directory, reverse_dirs: Vec<String>) -> String {
+        loop {
+            match dir.parent {
+                ParentDir::Sub(d) => {
+                    let parent_dir = d.get(&dir.name)
+                        .expect("[error] could not open parent dir");
+                    
+                    let mut reverse_dirs = reverse_dirs.clone();
+                    reverse_dirs.push(dir.name.clone());
+
+                    Directory::get_path(parent_dir, reverse_dirs);
+                },
+                ParentDir::Root => {
+                    return reverse_dirs.into_iter().rev().collect();
+                },
+            }
+        }
+    }
+
+    pub fn add_file(&mut self, file: File) {
+        if self.files.contains_key(&file.name) {
+            println!("[error] file already exists!");
+            return;
+        }
+        
+        self.files.insert(file.name.to_string(), file);
+    }
+
     // fn add_child(&mut self, dir_entry: DirectoryEntry) {
     //     // If adding a file
     //     if let DirectoryEntry::File(f_one) = &dir_entry {
