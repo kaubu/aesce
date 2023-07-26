@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::collections::HashMap;
 
 use chrono::prelude::*;
 use uuid::Uuid;
@@ -42,34 +43,33 @@ impl File {
     }
 }
 
-#[derive(Clone)]
-enum DirectoryEntry {
-    Directory(Directory),
-    File(File),
-}
+type DirectoryListing<'a> = HashMap<String, Directory<'a>>;
+type FileListing = HashMap<String, File>;
 
 #[derive(Clone)]
-struct Directory {
+struct Directory<'a> {
     name: String,
-    parent: Box<DirectoryEntry>,
-    children: Vec<Box<DirectoryEntry>>,
+    parent: &'a HashMap<String, DirectoryListing<'a>>,
+    // children: &'a HashMap<String, DirectoryEntry>,
+    directories: DirectoryListing<'a>,
+    files: FileListing,
 }
 
-impl Directory {
-    fn add_child(&mut self, dir_entry: DirectoryEntry) {
-        // If adding a file
-        if let DirectoryEntry::File(f_one) = &dir_entry {
-            (&self.children).into_iter().any(|c| {
-                if let DirectoryEntry::File(f_two) = *(*c).clone() {
-                    return f_one.name == f_two.name
-                }
+impl Directory<'_> {
+    // fn add_child(&mut self, dir_entry: DirectoryEntry) {
+    //     // If adding a file
+    //     if let DirectoryEntry::File(f_one) = &dir_entry {
+    //         (&self.children).into_iter().any(|c| {
+    //             if let DirectoryEntry::File(f_two) = *(*c).clone() {
+    //                 return f_one.name == f_two.name
+    //             }
 
-                false
-            });
-        }
+    //             false
+    //         });
+    //     }
 
-        self.children.push(Box::new(dir_entry));
-    }
+    //     self.children.push(Box::new(dir_entry));
+    // }
 
     // fn remove_child(&mut self,);
 
